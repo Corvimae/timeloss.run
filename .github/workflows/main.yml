@@ -1,0 +1,41 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy
+
+on: workflow_dispatch
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@main
+              
+      - name: Log in to Docker
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+        
+      - name: Build container image
+        run: docker build -t docker.io/corvimae/timeloss-dot-run:latest .
+
+      - name: Push image
+        run: docker push docker.io/corvimae/timeloss-dot-run:latest
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2.1.0
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          
+      - name: Configure doctl
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 maybreak-k8s
+
+      # Runs a single command using the runners shell
+      - name: Deploy
+        run: kubectl rollout restart deployment timeloss-dot-run
