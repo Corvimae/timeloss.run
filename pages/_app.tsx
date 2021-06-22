@@ -46,8 +46,8 @@ const Layout = styled.div`
   width: 100vw;
   height: 100vh;
   background: #FFA17F;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to top, #00223E, #FFA17F);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to top, #00223E, #FFA17F); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  background: -webkit-linear-gradient(to top, #14558a, #FFA17F);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to top, #14558a, #FFA17F); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   grid-template-rows: 1fr max-content;
 `;
 
@@ -57,6 +57,8 @@ const Content = styled.div`
 `;
 
 const Footer = styled.div`
+  position: fixed;
+  bottom: 0;
   padding: 0.5rem 0.75rem;
   color: #fff;
 
