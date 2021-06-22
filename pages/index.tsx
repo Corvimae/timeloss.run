@@ -16,10 +16,12 @@ function determineRunDeathPoints(document: Document): Record<number, Element> {
       .reduce((innerAcc, id) => ({ ...innerAcc, [id]: segment }), acc);
   }, {});
 
-  return Object.entries(lastSplits).reduce<Record<number, Element>>((acc, [id, split]) => ({
-    ...acc,
-    [id]: split.nextElementSibling,
-  }), {});
+  return Object.entries(lastSplits)
+    .filter(([_, split]) => split.nextElementSibling !== null)
+    .reduce<Record<number, Element>>((acc, [id, split]) => ({
+      ...acc,
+      [id]: split.nextElementSibling,
+    }), {});
 }
 
 export default function Home() {
@@ -64,6 +66,8 @@ export default function Home() {
 
           const deathPoints = determineRunDeathPoints(document);
 
+          console.log(Object.entries(deathPoints).reduce((acc, [a, b]) => ({ ...acc, [a]: b?.querySelector('Name').textContent.trim() ?? '<<undef>>'}), {}))
+
           const splitNamesToDeathCounts = Object.values(deathPoints).reduce<Record<string, number>>((acc, element) => {
             const splitName = element?.querySelector('Name').textContent.trim() ?? '<<undefined>>';
 
@@ -73,7 +77,7 @@ export default function Home() {
             }
           }, {});
 
-          const deathsBeforeFirstSplit = attempts.length - Object.values(splitNamesToDeathCounts).reduce<number>((acc, value) => acc + value, 0);
+          const deathsBeforeFirstSplit = attempts.length - Object.values(splitNamesToDeathCounts).reduce<number>((acc, value) => acc + value, 0) - completedAttemptDurations.length;
           const splitWithMostDeaths = Object.entries(splitNamesToDeathCounts).reduce<[string, number]>(([accName, accCount], [name, count]) => {
             if (name !== '<<undefined>>' && count > accCount) return [name, count];
 
