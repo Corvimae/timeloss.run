@@ -157,7 +157,7 @@ export default function Home() {
               {results.deathsBeforeFirstSplitPercentage >= 5 && results.deathsBeforeFirstSplitPercentage < 33 && (
                 <HelpText>better to not get attached to the run anyways</HelpText>
               )}
-              {results.completedRunPercentage < 5 && (
+              {results.deathsBeforeFirstSplitPercentage < 5 && (
                 <HelpText>starting off strong</HelpText>
               )}
             </ResultItem>
@@ -170,7 +170,7 @@ export default function Home() {
               <DeadRunGrid>
                 <div>{results.firstSplitName}</div>
                 <div>{results.deathsBeforeFirstSplitPercentage}%</div>
-                {Object.entries(results.splitNamesToDeathCounts).filter(([name]) => name !== '<<undefined>>').map(([name, count]) => (
+                {Object.entries(results.splitNamesToDeathCounts).filter(([name, count]) => name !== '<<undefined>>' && count > 0).map(([name, count]) => (
                   <React.Fragment key={name}>
                     <div>{name}</div>
                     <div>{Math.floor(count as number / results.attemptCount * 100)}%</div>
