@@ -111,8 +111,6 @@ export default function Home() {
 
           const deathPoints = determineRunDeathPoints(document);
 
-          console.log(Object.entries(deathPoints).reduce((acc, [a, b]) => ({ ...acc, [a]: b?.querySelector('Name').textContent.trim() ?? '<<undef>>'}), {}))
-
           const splitNamesToDeathCounts = Object.values(deathPoints).reduce<Record<string, number>>((acc, element) => {
             const splitName = element?.querySelector('Name').textContent.trim() ?? '<<undefined>>';
 
