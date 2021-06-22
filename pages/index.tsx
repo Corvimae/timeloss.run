@@ -37,6 +37,7 @@ export default function Home() {
           const baseDate = new Date();
           const attempts = [...document.querySelectorAll('Attempt')];
           const runDurations = attempts.map(attempt => {
+            if (!attempt.getAttribute('ended')) return undefined;
             let duration = differenceInMilliseconds(
               parse(attempt.getAttribute('ended'), 'MM/dd/yyyy HH:mm:ss', baseDate),
               parse(attempt.getAttribute('started'), 'MM/dd/yyyy HH:mm:ss', baseDate),
@@ -50,7 +51,7 @@ export default function Home() {
             }
 
             return [duration, attempt];
-          }) as [number, Element][];
+          }).filter(item => item !== undefined) as [number, Element][];
 
           const totalAttemptDuration = runDurations.reduce((acc, [attemptDuration]) => acc + attemptDuration, 0);
           const longestAttemptDuration = Math.max(...runDurations.map(([duration]) => duration));
@@ -241,6 +242,7 @@ const ResultItem = styled.div`
   flex-direction: column;
   font-size: 2rem;
   margin-bottom: 2rem;
+  text-align: center;
 `;
 
 const HelpText = styled.div`
