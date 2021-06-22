@@ -83,8 +83,20 @@ export default function Home() {
             const pauseTime = attempt.querySelector('PauseTime');
 
             if (pauseTime) {
-              const pauseTimestamp = parse(pauseTime.textContent.trim(), 'HH:mm:ss.SSSSSSS', baseDate);
-              duration -= differenceInMilliseconds(parse(pauseTime.textContent.trim(), 'HH:mm:ss.SSSSSSS', baseDate), startOfDay(pauseTimestamp));
+              let pauseText = pauseTime.textContent.trim();
+              const dayCountMatch = pauseText.match(/^([0-9]+)\./);
+
+              if (dayCountMatch) {
+                duration -= 1000 * 60 * 60 * 24 * Number(dayCountMatch[1]);
+                
+                const [_, ...rest] = pauseText.split('.');
+                
+                pauseText = rest.join('.');
+              }
+            
+              const pauseTimestamp = parse(pauseText, 'HH:mm:ss.SSSSSSS', baseDate);
+
+              duration -= differenceInMilliseconds(pauseTimestamp, startOfDay(pauseTimestamp));
             }
 
             return [duration, attempt];
