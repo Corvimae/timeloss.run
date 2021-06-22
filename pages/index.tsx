@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
 import { parse, differenceInMilliseconds, formatDuration, intervalToDuration, startOfDay } from 'date-fns';
 
+const PERCENTILES = [0.5, 0.75, 0.9, 0.95];
+
 function formatMillisecondDuration(totalMilliseconds: number): string {
   return formatDuration(intervalToDuration({ start: 0, end: totalMilliseconds}), { delimiter: ', ' }).replace(/,([^,]*)$/, ' and $1')
 }
@@ -84,6 +86,23 @@ export default function Home() {
             [name]: index === 0 ? deathsBeforeFirstSplit : splitNamesToDeathCounts[name],
           }), {});
 
+          const percentiles = PERCENTILES.reduce((acc, percentile) => {
+            let sum = 0;
+
+            for (let [segment, count] of Object.entries(sortedSplitNamesToDeathCounts)) {
+              sum += count as number ?? 0;
+
+              if (sum / attempts.length > percentile) {
+                return {
+                  ...acc,
+                  [percentile]: segment
+                }
+              }
+            }
+
+            return acc;
+          }, {});
+
           setResults({
             attemptCount: attempts.length,
             completedRunCount: completedAttemptDurations.length,
@@ -94,6 +113,7 @@ export default function Home() {
             splitWithMostDeathsPercentage: Math.floor(Math.max(deathsBeforeFirstSplit, splitWithMostDeaths[1]) / attempts.length * 100),
             splitNamesToDeathCounts,
             sortedSplitNamesToDeathCounts,
+            percentiles,
             firstSplitName: document.querySelector('Segment Name').textContent,
             completedRunPercentage: Math.floor(completedAttemptDurations.length / attempts.length * 100),
             humanizedTotalDuration: formatMillisecondDuration(totalAttemptDuration),
@@ -195,6 +215,11 @@ export default function Home() {
               </DeadRunGrid>
             </ResultItem>
           )}
+          {Object.entries(results.percentiles).map(([percentile, split], index, list) => split === list[index - 1]?.[1] ? null : (
+            <ResultItem>
+              {Number(percentile) * 100}% of your runs die before {split}
+            </ResultItem>
+          ))}
        </Results>
      )}
    </Container>
