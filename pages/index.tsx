@@ -116,9 +116,9 @@ export default function Home() {
       {results && (
         <Results>
           <ResultItem>
-            you've been running this game for {results.humanizedTotalDuration}
+            you&apos;ve been running this game for {results.humanizedTotalDuration}
             <HelpText>
-              and that's just with livesplit running...
+              and that&apos;s just with livesplit running...
             </HelpText>
           </ResultItem>
 

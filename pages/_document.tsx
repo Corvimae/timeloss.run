@@ -11,7 +11,6 @@ export default class RangerDocument extends Document {
     try {
       ctx.renderPage = (): RenderPageResult | Promise<RenderPageResult> => (
         originalRenderPage({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           enhanceApp: (App: any) => (props: any) => sheet.collectStyles(<App {...props} />),
         })
       );
