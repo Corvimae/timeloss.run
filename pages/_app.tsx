@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import Head from 'next/head';
-import Link from 'next/link';
 import { AppProps } from 'next/dist/next-server/lib/router/router';
 
 import '../styles/globals.css';
@@ -13,6 +12,21 @@ function Ranger({ Component, pageProps }: AppProps): React.ReactElement {
         <title>timeloss.run</title>
         <link rel="shortcut icon" href="/favicon.png" />
         <meta charSet="UTF-8" />
+        <title>timeloss.run</title>
+        <meta name="title" content="timeloss.run" />
+        <meta name="description" content="life is short. how much of it did you spend resetting?" />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://timeloss.run/" />
+        <meta property="og:title" content="timeloss.run" />
+        <meta property="og:description" content="life is short. how much of it did you spend resetting?" />
+        <meta property="og:image" content="https://timeloss.run/meta.png" />
+
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://timeloss.run/" />
+        <meta property="twitter:title" content="timeloss.run" />
+        <meta property="twitter:description" content="life is short. how much of it did you spend resetting?" />
+        <meta property="twitter:image" content="https://timeloss.run/meta.png" />
       </Head>
       <Content>
         <Component {...pageProps} />

@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
-import { parse, differenceInMilliseconds, formatDuration, intervalToDuration } from 'date-fns';
+import { parse, differenceInMilliseconds, formatDuration, intervalToDuration, startOfDay } from 'date-fns';
 
 function formatMillisecondDuration(totalMilliseconds: number): string {
   return formatDuration(intervalToDuration({ start: 0, end: totalMilliseconds}), { delimiter: ', ' }).replace(/,([^,]*)$/, ' and $1')
@@ -36,10 +36,21 @@ export default function Home() {
 
           const baseDate = new Date();
           const attempts = [...document.querySelectorAll('Attempt')];
-          const runDurations = attempts.map(attempt => [differenceInMilliseconds(
-            parse(attempt.getAttribute('ended'), 'MM/dd/yyyy HH:mm:ss', baseDate),
-            parse(attempt.getAttribute('started'), 'MM/dd/yyyy HH:mm:ss', baseDate),
-          ), attempt]) as [number, Element][];
+          const runDurations = attempts.map(attempt => {
+            let duration = differenceInMilliseconds(
+              parse(attempt.getAttribute('ended'), 'MM/dd/yyyy HH:mm:ss', baseDate),
+              parse(attempt.getAttribute('started'), 'MM/dd/yyyy HH:mm:ss', baseDate),
+            );
+
+            const pauseTime = attempt.querySelector('PauseTime');
+
+            if (pauseTime) {
+              const pauseTimestamp = parse(pauseTime.textContent.trim(), 'HH:mm:ss.SSSSSSS', baseDate);
+              duration -= differenceInMilliseconds(parse(pauseTime.textContent.trim(), 'HH:mm:ss.SSSSSSS', baseDate), startOfDay(pauseTimestamp));
+            }
+
+            return [duration, attempt];
+          }) as [number, Element][];
 
           const totalAttemptDuration = runDurations.reduce((acc, [attemptDuration]) => acc + attemptDuration, 0);
           const longestAttemptDuration = Math.max(...runDurations.map(([duration]) => duration));
@@ -61,7 +72,6 @@ export default function Home() {
 
           const deathsBeforeFirstSplit = attempts.length - Object.values(splitNamesToDeathCounts).reduce<number>((acc, value) => acc + value, 0);
           const splitWithMostDeaths = Object.entries(splitNamesToDeathCounts).reduce<[string, number]>(([accName, accCount], [name, count]) => {
-            console.log(name, count);
             if (name !== '<<undefined>>' && count > accCount) return [name, count];
 
             return [accName, accCount];
@@ -173,7 +183,7 @@ export default function Home() {
                 {Object.entries(results.splitNamesToDeathCounts).filter(([name, count]) => name !== '<<undefined>>' && count > 0).map(([name, count]) => (
                   <React.Fragment key={name}>
                     <div>{name}</div>
-                    <div>{Math.floor(count as number / results.attemptCount * 100)}%</div>
+                    <div>{(count as number / results.attemptCount * 100).toPrecision(2)}%</div>
                   </React.Fragment>
                 ))}
               </DeadRunGrid>
