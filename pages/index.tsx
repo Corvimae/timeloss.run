@@ -5,8 +5,41 @@ import { parse, differenceInMilliseconds, formatDuration, intervalToDuration, st
 
 const PERCENTILES = [0.5, 0.75, 0.9, 0.95];
 
+interface Percentage {
+  value: number;
+  label: string;
+}
+
+interface ParseResults {
+  attemptCount: number;
+  completedRunCount: number;
+  totalAttemptDuration: number;
+  deathsBeforeFirstSplit: number;
+  deathsBeforeFirstSplitPercentage: Percentage;
+  splitWithMostDeaths: [string, number];
+  splitWithMostDeathsPercentage: Percentage;
+  splitNamesToDeathCounts: Record<string, number>;
+  sortedSplitNamesToDeathCounts: Record<string, number>;
+  percentiles: Record<number, string>;
+  firstSplitName: string;
+  completedRunPercentage: Percentage;
+  humanizedTotalDuration: string;
+  humanizedAverageDuration: string;
+  humanizedLongestDuration: string;
+  humanizedPBDuration: string;
+}
+
 function formatMillisecondDuration(totalMilliseconds: number): string {
   return formatDuration(intervalToDuration({ start: 0, end: totalMilliseconds}), { delimiter: ', ' }).replace(/,([^,]*)$/, ' and $1')
+}
+
+function formatPercentage(successes: number, trials: number): Percentage {
+  const value = Math.floor(successes / trials * 100);
+
+  return {
+    value, 
+    label: `${value < 1 ? '<1' : value}%`,
+  };
 }
 
 function determineRunDeathPoints(document: Document): Record<number, Element> {
@@ -25,7 +58,7 @@ function determineRunDeathPoints(document: Document): Record<number, Element> {
 }
 
 export default function Home() {
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState<ParseResults>(null);
   const [error, setError] = useState(null);
   const onDrop = useCallback(acceptedFiles => {
     if (acceptedFiles.length) {
@@ -112,14 +145,14 @@ export default function Home() {
             completedRunCount: completedAttemptDurations.length,
             totalAttemptDuration,
             deathsBeforeFirstSplit,
-            deathsBeforeFirstSplitPercentage: Math.floor(deathsBeforeFirstSplit / attempts.length * 100),
+            deathsBeforeFirstSplitPercentage: formatPercentage(deathsBeforeFirstSplit, attempts.length),
             splitWithMostDeaths,
-            splitWithMostDeathsPercentage: Math.floor(Math.max(deathsBeforeFirstSplit, splitWithMostDeaths[1]) / attempts.length * 100),
+            splitWithMostDeathsPercentage: formatPercentage(Math.max(deathsBeforeFirstSplit, splitWithMostDeaths[1]), attempts.length),
             splitNamesToDeathCounts,
             sortedSplitNamesToDeathCounts,
             percentiles,
             firstSplitName: document.querySelector('Segment Name').textContent,
-            completedRunPercentage: Math.floor(completedAttemptDurations.length / attempts.length * 100),
+            completedRunPercentage:formatPercentage(completedAttemptDurations.length, attempts.length),
             humanizedTotalDuration: formatMillisecondDuration(totalAttemptDuration),
             humanizedAverageDuration: formatMillisecondDuration(Math.floor(totalAttemptDuration / attempts.length)),
             humanizedLongestDuration: formatMillisecondDuration(longestAttemptDuration),
@@ -172,43 +205,43 @@ export default function Home() {
           </ResultItem>
 
           <ResultItem>
-            {results.completedRunPercentage}% of your runs finished ({results.completedRunCount} of {results.attemptCount})
-            {results.completedRunPercentage >= 75 && (
+            {results.completedRunPercentage.label} of your runs finished ({results.completedRunCount} of {results.attemptCount})
+            {results.completedRunPercentage.value >= 75 && (
               <HelpText>must be nice</HelpText>
             )}
-            {results.completedRunPercentage >= 25 && results.completedRunPercentage < 75 && (
+            {results.completedRunPercentage.value >= 25 && results.completedRunPercentage.value < 75 && (
               <HelpText>could be worse</HelpText>
             )}
-            {results.completedRunPercentage >= 5 && results.completedRunPercentage < 25 && (
+            {results.completedRunPercentage.value >= 5 && results.completedRunPercentage.value < 25 && (
               <HelpText>every day you wake up and choose resets </HelpText>
             )}
-            {results.completedRunPercentage < 5 && (
+            {results.completedRunPercentage.value < 5 && (
               <HelpText>oof</HelpText>
             )}
           </ResultItem>
 
           {results.deathsBeforeFirstSplit > 0 && (
             <ResultItem>
-              {results.deathsBeforeFirstSplitPercentage < 1 ? '<1' : results.deathsBeforeFirstSplitPercentage}% of your runs died before the first split.
-              {results.deathsBeforeFirstSplitPercentage >= 66 && (
+              {results.deathsBeforeFirstSplitPercentage.label} of your runs died before the first split.
+              {results.deathsBeforeFirstSplitPercentage.value >= 66 && (
                 <HelpText>what is lategame</HelpText> 
               )}
-              {results.deathsBeforeFirstSplitPercentage >= 33 && results.deathsBeforeFirstSplitPercentage < 66 && (
+              {results.deathsBeforeFirstSplitPercentage.value >= 33 && results.deathsBeforeFirstSplitPercentage.value < 66 && (
                 <HelpText>reset early, reset often</HelpText>
               )}
-              {results.deathsBeforeFirstSplitPercentage >= 5 && results.deathsBeforeFirstSplitPercentage < 33 && (
+              {results.deathsBeforeFirstSplitPercentage.value >= 5 && results.deathsBeforeFirstSplitPercentage.value < 33 && (
                 <HelpText>better to not get attached to the run anyways</HelpText>
               )}
-              {results.deathsBeforeFirstSplitPercentage < 5 && (
+              {results.deathsBeforeFirstSplitPercentage.value < 5 && (
                 <HelpText>starting off strong</HelpText>
               )}
             </ResultItem>
           )}
 
-          {results.splitWithMostDeathsPercentage > 0 && (
+          {results.splitWithMostDeathsPercentage.value > 0 && (
             <ResultItem>
               {results.splitWithMostDeaths[1] < results.deathsBeforeFirstSplit ? `${results.firstSplitName}` : results.splitWithMostDeaths[0]}
-              &nbsp;is the split that hates you the most, killing {results.splitWithMostDeathsPercentage}% of your runs
+              &nbsp;is the split that hates you the most, killing {results.splitWithMostDeathsPercentage.label} of your runs
               <DeadRunGrid>
                 {Object.entries(results.sortedSplitNamesToDeathCounts).map(([name, count]) => (
                   <React.Fragment key={name}>
@@ -304,4 +337,5 @@ const DeadRunGrid = styled.div`
 
 const DeathCount = styled.div`
   font-variant-numeric: tabular-nums;
+  text-align: right;
 `;
