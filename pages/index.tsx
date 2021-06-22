@@ -77,6 +77,12 @@ export default function Home() {
             return [accName, accCount];
           }, ['', 0]);
 
+          const segmentNames = [...document.querySelectorAll('Segment Name')].map(name => name.textContent.trim());
+          const sortedSplitNamesToDeathCounts = segmentNames.reduce((acc, name, index) => ({
+            ...acc,
+            [name]: index === 0 ? deathsBeforeFirstSplit : splitNamesToDeathCounts[name],
+          }), {});
+
           setResults({
             attemptCount: attempts.length,
             completedRunCount: completedAttemptDurations.length,
@@ -86,6 +92,7 @@ export default function Home() {
             splitWithMostDeaths,
             splitWithMostDeathsPercentage: Math.floor(Math.max(deathsBeforeFirstSplit, splitWithMostDeaths[1]) / attempts.length * 100),
             splitNamesToDeathCounts,
+            sortedSplitNamesToDeathCounts,
             firstSplitName: document.querySelector('Segment Name').textContent,
             completedRunPercentage: Math.floor(completedAttemptDurations.length / attempts.length * 100),
             humanizedTotalDuration: formatMillisecondDuration(totalAttemptDuration),
@@ -178,12 +185,10 @@ export default function Home() {
               {results.splitWithMostDeaths[1] < results.deathsBeforeFirstSplit ? `${results.firstSplitName}` : results.splitWithMostDeaths[0]}
               &nbsp;is the split that hates you the most, killing {results.splitWithMostDeathsPercentage}% of your runs
               <DeadRunGrid>
-                <div>{results.firstSplitName}</div>
-                <div>{results.deathsBeforeFirstSplitPercentage}%</div>
-                {Object.entries(results.splitNamesToDeathCounts).filter(([name, count]) => name !== '<<undefined>>' && count > 0).map(([name, count]) => (
+                {Object.entries(results.sortedSplitNamesToDeathCounts).map(([name, count]) => (
                   <React.Fragment key={name}>
                     <div>{name}</div>
-                    <div>{(count as number / results.attemptCount * 100).toPrecision(2)}%</div>
+                    <DeathCount>{((count || 0) as number / results.attemptCount * 100).toFixed(2)}%</DeathCount>
                   </React.Fragment>
                 ))}
               </DeadRunGrid>
@@ -264,4 +269,8 @@ const DeadRunGrid = styled.div`
     padding: 0.25rem 0.5rem;
     font-size: 1rem;
   }
+`;
+
+const DeathCount = styled.div`
+  font-variant-numeric: tabular-nums;
 `;
