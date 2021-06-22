@@ -1,1 +1,1 @@
-the livesplit file to extistential dread pipeline
+the livesplit file to existential dread pipeline
