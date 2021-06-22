@@ -137,7 +137,7 @@ export default function Home() {
     }
   }, []);
 
-  const { getRootProps, getInputProps, } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
    <Container {...getRootProps()}>
@@ -189,7 +189,7 @@ export default function Home() {
 
           {results.deathsBeforeFirstSplit > 0 && (
             <ResultItem>
-              {results.deathsBeforeFirstSplitPercentage}% of your runs died before the first split.
+              {results.deathsBeforeFirstSplitPercentage < 1 ? '<1' : results.deathsBeforeFirstSplitPercentage}% of your runs died before the first split.
               {results.deathsBeforeFirstSplitPercentage >= 66 && (
                 <HelpText>what is lategame</HelpText> 
               )}
