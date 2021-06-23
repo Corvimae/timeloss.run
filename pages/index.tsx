@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
 import { formatDuration, intervalToDuration } from 'date-fns';
-import { calculatePercentiles, LivesplitData, parseLivesplitDocument } from '../utils/parse-livesplit';
+import { calculatePercentiles, LivesplitData, parseLivesplitDocument, initRelativeDeathRateGenerator } from '../utils/parse-livesplit';
 
 interface Percentage {
   value: number;
@@ -39,6 +39,8 @@ const Results: React.FC<{ results: LivesplitData }> = ({ results }) =>  {
   const percentiles = calculatePercentiles(results);
 
   const sortedSegments = useMemo(() => Object.values(results.segments).sort((a, b) => a.index - b.index), [results.segments]);
+
+  const relativeDeathRateGen = initRelativeDeathRateGenerator();
 
   return (
     <ResultsContainer>
@@ -94,10 +96,11 @@ const Results: React.FC<{ results: LivesplitData }> = ({ results }) =>  {
         <ResultItem>
           {segmentWithMostDeaths.name} is the split that hates you the most, killing {segmentWithMostDeathsPercentage.label} of your runs
           <DeadRunGrid>
-            {sortedSegments.map(segment => (
+            {sortedSegments.map((segment, index) => (
               <React.Fragment key={segment.id}>
                 <div>{segment.name}</div>
                 <DeathCount>{(segment.totalDeaths / results.runCount * 100).toFixed(2)}%</DeathCount>
+                <DeathCount>{(relativeDeathRateGen.next({segment, index, results, sortedSegments}).value * 100).toFixed(2)}%</DeathCount>
               </React.Fragment>
             ))}
           </DeadRunGrid>
@@ -228,7 +231,7 @@ const ResultsContainer = styled.div`
 
 const DeadRunGrid = styled.div`
   display: grid; 
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content 1fr 1fr;
   margin: 1rem 0;
   
   & > div {

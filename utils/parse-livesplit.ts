@@ -224,3 +224,28 @@ export function calculatePercentiles(livesplitData: LivesplitData): Record<numbe
     return acc;
   }, {});
 }
+
+interface DeathRateGeneratorArgs{
+  segment: Segment,
+  index: number,
+  results: LivesplitData,
+  sortedSegments: Array<Segment>
+}
+
+export function initRelativeDeathRateGenerator(){
+  function* calculateRelativeDeathRate() : Generator<number, never, DeathRateGeneratorArgs>{
+    let genArgs: DeathRateGeneratorArgs = yield 0;
+    let deathAcc = 0;
+    let deathRate: number;
+    while(true){
+      deathRate = (genArgs.segment.totalDeaths) / (genArgs.results.runCount - deathAcc)
+      deathAcc += genArgs.segment.totalDeaths;
+      genArgs = yield deathRate;
+    }
+  }
+
+  let retGenerator = calculateRelativeDeathRate();
+  //Need to prime the generator because generator semantics weird.
+  retGenerator.next({} as DeathRateGeneratorArgs);
+  return retGenerator;
+}
