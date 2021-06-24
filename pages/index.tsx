@@ -100,7 +100,7 @@ const Results: React.FC<{ results: LivesplitData }> = ({ results }) =>  {
               <Tooltip title="The % of all runs that die on this split." position="bottom" arrow distance={8} duration={0}>
                 <NumericHeader>Deaths</NumericHeader>
               </Tooltip>
-              <Tooltip title="The % of runs that make it to this split, but no farther." position="bottom" arrow distance={8} duration={0}>
+              <Tooltip title="The % of the runs that make it to this split that die on this split." position="bottom" arrow distance={8} duration={0}>
                 <NumericHeader>Relative Deaths</NumericHeader>
               </Tooltip>
             </DeadRunHeader>
