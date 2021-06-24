@@ -10,6 +10,7 @@ interface Segment {
   nextSegmentId: string | null;
   isLastSegment: boolean;
   totalDeaths: number;
+  runsReachingSegmentCount: number;
   element: Element;
 }
 
@@ -62,6 +63,7 @@ function assignIDsToSegments(document: Document): Record<string, Segment> {
         index,
         nextSegmentId: null,
         totalDeaths: 0,
+        runsReachingSegmentCount: 0,
         isLastSegment: index === list.length - 1,
         element: segment,
       },
@@ -180,17 +182,21 @@ export function parseLivesplitDocument(document: Document): LivesplitData {
     };
   }, {});
 
-  const segmentsWithMetadata = (Object.entries(segmentsById) as [string, Segment][]).reduce<Record<string, Segment>>((acc, [id, segment]) => {
+  const runList = Object.values(runsWithMetadata);
+
+  const segmentsWithMetadata = (Object.entries(segmentsById) as [string, Segment][]).reduce<Record<string, Segment>>((acc, [id, segment], index, list) => {
+    const segmentDeaths = Object.values(runsWithMetadata).filter(run => run.deathSegment?.id === id).length;
+    const previousSegment = acc[list[index - 1]?.[1].id];
+
     return {
       ...acc,
       [id]: {
         ...segment,
-        totalDeaths: Object.values(runsWithMetadata).filter(run => run.deathSegment?.id === id).length,
+        totalDeaths: segmentDeaths,
+        runsReachingSegmentCount: (previousSegment?.runsReachingSegmentCount ?? runList.length) - (previousSegment?.totalDeaths ?? 0),
       },
     };
   }, {});
-  
-  const runList = Object.values(runsWithMetadata);
   
   return {
     segments: segmentsWithMetadata,

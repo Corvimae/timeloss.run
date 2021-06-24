@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
 import { formatDuration, intervalToDuration } from 'date-fns';
+import { Tooltip } from 'react-tippy';
 import { calculatePercentiles, LivesplitData, parseLivesplitDocument } from '../utils/parse-livesplit';
 
 interface Percentage {
@@ -94,10 +95,20 @@ const Results: React.FC<{ results: LivesplitData }> = ({ results }) =>  {
         <ResultItem>
           {segmentWithMostDeaths.name} is the split that hates you the most, killing {segmentWithMostDeathsPercentage.label} of your runs
           <DeadRunGrid>
+            <DeadRunHeader>
+              <div>Segment</div>
+              <Tooltip title="The % of all runs that die on this split." position="bottom" arrow distance={8} duration={0}>
+                <NumericHeader>Deaths</NumericHeader>
+              </Tooltip>
+              <Tooltip title="The % of runs that make it to this split, but no farther." position="bottom" arrow distance={8} duration={0}>
+                <NumericHeader>Relative Deaths</NumericHeader>
+              </Tooltip>
+            </DeadRunHeader>
             {sortedSegments.map(segment => (
               <React.Fragment key={segment.id}>
                 <div>{segment.name}</div>
                 <DeathCount>{(segment.totalDeaths / results.runCount * 100).toFixed(2)}%</DeathCount>
+                <DeathCount>{(segment.totalDeaths / segment.runsReachingSegmentCount * 100).toFixed(2)}%</DeathCount>
               </React.Fragment>
             ))}
           </DeadRunGrid>
@@ -228,7 +239,7 @@ const ResultsContainer = styled.div`
 
 const DeadRunGrid = styled.div`
   display: grid; 
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: 1fr repeat(2, max-content);
   margin: 1rem 0;
   
   & > div {
@@ -239,5 +250,18 @@ const DeadRunGrid = styled.div`
 
 const DeathCount = styled.div`
   font-variant-numeric: tabular-nums;
+  text-align: right;
+`;
+
+const DeadRunHeader = styled.div`
+  display: contents;
+
+  & > div {
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+  }
+`;
+
+const NumericHeader = styled.div`
   text-align: right;
 `;

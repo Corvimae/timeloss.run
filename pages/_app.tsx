@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Head from 'next/head';
 import { AppProps } from 'next/dist/next-server/lib/router/router';
 
+import 'react-tippy/dist/tippy.css';
 import '../styles/globals.css';
 
 function Ranger({ Component, pageProps }: AppProps): React.ReactElement {
